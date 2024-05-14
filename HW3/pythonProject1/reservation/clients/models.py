@@ -1,36 +1,40 @@
-from django import forms
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit
-from .models import Client, ClientType, Product, Order
+from django.db import models
 
-class ClientTypeForm(forms.ModelForm):
-    class Meta:
-        model = ClientType
-        fields = '__all__'
+# Create your models here.
 
-class ClientForm(forms.ModelForm):
-    class Meta:
-        model = Client
-        fields = '__all__'
+from django.db import models
 
-class ProductForm(forms.ModelForm):
-    class Meta:
-        model = Product
-        fields = '__all__'
+class ClientType(models.Model):
+    name = models.CharField(max_length=100)
 
-class OrderForm(forms.ModelForm):
-    class Meta:
-        model = Order
-        fields = '__all__'
-class ProductForm(forms.Form):
-    PRODUCT_CATEGORIES = [
+    def __str__(self):
+        return self.name
+
+class Client(models.Model):
+    name = models.CharField(max_length=100)
+    client_type = models.ForeignKey(ClientType, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    category = models.CharField(max_length=50, choices=[
         ('Food', 'Food'),
         ('Snacks', 'Snacks'),
         ('Drinks', 'Drinks'),
         ('Hardware', 'Hardware'),
-    ]
+    ])
+    description = models.TextField()
+    rating = models.IntegerField()
 
-    product_name = forms.CharField(max_length=100)
-    category = forms.ChoiceField(choices=PRODUCT_CATEGORIES)
-    description = forms.CharField(widget=forms.Textarea)
-    rating = forms.IntegerField(min_value=1, max_value=5)
+    def __str__(self):
+        return self.name
+
+class Order(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    products = models.ManyToManyField(Product)
+    order_date = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order #{self.pk} - {self.client.name}"
